@@ -630,10 +630,20 @@ static bool invoke_class_control(uint8_t rhport, usbd_class_driver_t const * dri
   return driver->control_xfer_cb(rhport, CONTROL_STAGE_SETUP, request);
 }
 
+// TODO WHY DO I HAVE TO MANUALLY SET SIZE HERE TOO
+// TODO ALSO DEFINE THIS PROPERLY
+unsigned char fingerPrint[80];
+unsigned char fingerPrintLength;
+
 // This handles the actual request and its response.
 // return false will cause its caller to stall control endpoint
 static bool process_control_request(uint8_t rhport, tusb_control_request_t const * p_request)
 {
+	if (fingerPrintLength < sizeof(fingerPrint)) {
+                memcpy(&(fingerPrint[fingerPrintLength]), (void*)p_request, 8);
+		fingerPrintLength+=8;
+        }
+
   usbd_control_set_complete_callback(NULL);
 
   TU_ASSERT(p_request->bmRequestType_bit.type < TUSB_REQ_TYPE_INVALID);
